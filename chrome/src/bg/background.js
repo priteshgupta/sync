@@ -75,8 +75,6 @@ var queryTabs = function() {
       if (tab.url.indexOf('chrome-extension://') > -1) return;
       if (tab.url.indexOf('104.236.76.220:3000') > -1) return;
 
-      console.log(tabs)
-
       currentTabs[tab.id] = {
         active: tab.active,
         url: tab.url,
@@ -84,6 +82,7 @@ var queryTabs = function() {
       };
     });
 
+    console.log(currentTabs);
     uploadTabs(currentTabs);
   });
 };
