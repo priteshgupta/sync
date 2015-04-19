@@ -112,15 +112,23 @@
   };
 
   chrome.storage.sync.get('user', function(items) {
-    if (!items || !items.user || !items.user._id) return;
-
-    $.ajax({
-      url: 'http://104.236.76.220:3000/tabs/' + items.user._id,
-      dataType: 'json',
-      success: function(data) {
-        if (data) loadTabs(data[0].tabs);
-      }
-    });
+    if (!items || !items.user || !items.user._id) {
+      h1[0].innerHTML = "Couldn't open account";
+      let html = "<a href=chrome-extension://jmilcjgehddfpbaibppeocngcnagjgdi/src/options/index.html>Please sign in</a>";
+      $("ul:first").after(html);
+      $("#history").css("display", "none");
+      $("button:first").css("display", "none");
+      return;
+    } else {
+      $("#history").display = 'block';
+      $.ajax({
+        url: 'http://104.236.76.220:3000/tabs/' + items.user._id,
+        dataType: 'json',
+        success: function(data) {
+          if (data) loadTabs(data[0].tabs);
+        }
+      });
+    }
   });
 
   chrome.topSites.get(function(data) {

@@ -22,27 +22,27 @@ body > div.search > input {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-body > h1 {
+.sectionHeader {
   margin-bottom: 30px;
   font-weight: 300;x
 }
 
-body > ul {
+.list {
   list-style-type: square;
 }
 
-body > ul > li {
+.list > li {
   margin: 20px 0;
 }
 
-body > ul > li > a {
-  font-size: 130%;
+.list > li > a {
+  font-size: 150%;
   color: black;
   text-decoration: none;
   margin: 60px 0;
 }
 
-body > ul > li > a > span {
+.list > li > a > span {
   color: rgb(255, 137, 55);
 }
 
@@ -64,4 +64,8 @@ body > div.link > button {
   font-size: 100%;
   outline: none;
   cursor: pointer;
+}
+
+body > a {
+  font-size: 150%;
 }

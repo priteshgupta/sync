@@ -36,6 +36,7 @@
         }
       },
       error: function(jqXHR, textStatus, errorThrown) {
+        alert("Sorry, couldn't sign in!");
         console.log(jqXHR);
         alert(textStatus + ' ' + errorThrown);
       }
