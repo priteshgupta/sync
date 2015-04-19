@@ -1,5 +1,6 @@
-(function($, tabsList, openAll, title) {
-  var html = '',
+(function($, tabsList, title, mostVisited) {
+  var open = document.getElementsByTagName('a'),
+      html = '',
       tabsObj = {};
 
   chrome.storage.sync.get('user', function(items) {
@@ -14,12 +15,12 @@
 
           if (!tabs) {
             title.innerHTML = 'No Tabs Opened :(';
-            window.openAll.style.display = 'none';
+            open[0].style.display = 'none';
             return;
           }
           else {
             title.innerHTML = 'Tabs';
-            window.openAll.style.display = 'inline';
+            open[0].style.display = 'inline';
             tabsObj = tabs;
           }
 
@@ -33,7 +34,21 @@
     });
   });
 
-  openAll.onclick = function(e) {
+  chrome.topSites.get(function(data) {
+    var html = '';
+
+    data.length > 5 && (data.splice(6));
+
+    for (var i = 0, len = data.length; i < data.length; i++) {
+
+      html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
+    }
+
+    mostVisited.innerHTML = html;
+  });
+
+
+  open[0].onclick = function(e) {
     var tabs = Object.keys(tabsObj),
         active;
 
@@ -48,4 +63,6 @@
     chrome.tabs.update(parseInt(active, 10), { selected: true });
     window.close();
   };
-})(window.jQuery, window.tabs, window.openAll, window.title);
+
+  // openMVAll.onclick = function
+})(window.jQuery, window.tabs, window.title, window.mostVisited);
