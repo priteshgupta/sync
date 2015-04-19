@@ -1,5 +1,5 @@
 (function($, tabsList, mostVisited, search) {
-  var open = document.getElementsByTagName('button'),
+  var buttons = document.getElementsByTagName('button'),
       h1 = document.getElementsByTagName('h1'),
       topSites = [],
       tabsObj = {};
@@ -26,7 +26,7 @@
 
     h1[1].innerHTML = 'Most Visted';
     mostVisited.innerHTML = html;
-    open[1].style.display = 'inline';
+    buttons[1].style.display = 'inline';
   };
 
   var loadTabs = function(tabs, search) {
@@ -34,12 +34,12 @@
 
     if (!tabs) {
       h1[0].innerHTML = 'No Tabs Opened :(';
-      open[0].style.display = 'none';
+      buttons[0].style.display = 'none';
       return;
     }
     else {
       h1[0].innerHTML = 'Tabs';
-      open[0].style.display = 'inline';
+      buttons[0].style.display = 'inline';
       tabsObj = tabs;
     }
 
@@ -55,7 +55,7 @@
     tabsList.innerHTML = html;
   };
 
-  open[0].onclick = function(e) {
+  buttons[0].onclick = function(e) {
     var tabs = Object.keys(tabsObj),
         active;
 
@@ -64,14 +64,14 @@
     tabs.forEach(function(tab) {
       if (tabsObj[tab].active) active = tab;
 
-      window.open(tabsObj[tab].url);
+      window.buttons(tabsObj[tab].url);
     });
 
     chrome.tabs.update(parseInt(active, 10), { selected: true });
     window.close();
   };
 
-  open[1].onclick = function(e) {
+  buttons[1].onclick = function(e) {
     search.value = '';
     loadTopSites(e.target.style.visibility = 'hidden');
   };
@@ -79,7 +79,7 @@
   search.onkeyup = function(e) {
     if (e.target.value === '') {
       Object.keys(tabsObj).length && (loadTabs(tabsObj));
-      loadTopSites();
+      loadTopSites(true);
       return;
     }
 
