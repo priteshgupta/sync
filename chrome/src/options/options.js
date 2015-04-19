@@ -59,7 +59,19 @@
       },
       dataType: 'JSON',
       success: function(data) {
+
         if (data) {
+          $.ajax({
+              url: 'http://104.236.76.220:3000/create-history/' + data.user._id,
+              dataType: 'text',
+              success: function(data) {
+              },
+              error: function(jqXHR, textStatus, errorThrown) {
+                alert(textStatus + ' ' + errorThrown);
+              }
+            });
+          };
+
           chrome.storage.sync.set({'user': data}, reload);
         }
       },

@@ -46,6 +46,10 @@ body > ul > li > a > span {
   color: rgb(255, 137, 55);
 }
 
+body > ul > li > a > i {
+  color: rgba(0, 0, 0, 0.35);
+}
+
 body > div.link {
   margin: 45px 0;
 }

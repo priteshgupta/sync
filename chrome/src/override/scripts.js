@@ -6,7 +6,8 @@
       button = document.getElementsByTagName('button'),
       topSites = [],
       tabsObj = {},
-      lastVisitTime;
+      lastVisitTime,
+      userId;
 
   var loadTabs = function(tabs, search) {
     var html = '';
@@ -66,17 +67,34 @@
       text: ''
     });
 
-    chrome.history.search(options, function(data) {
-      var len = len < 6 ? len : 6;
+    $.ajax({
+      url: 'http://104.236.76.220:3000/history/' + userId,
+      dataType: 'json',
+      success: function(data) {
+        if (data) {
+          var keys = Object.keys(data).sort().reverse();
 
-      for (var i = 0; i < len; i++) {
-        html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
+          keys.forEach(function(key) {
+            html += '<li><a href="' + data[key].url + '">' + data[key].title + ' - <span>' + data[key].url + '</span> <i> -' + moment(parseInt(key, 10)).format('h:mm A - MMMM Do') + '</i></a>';
+          });
+
+          h1[2].innerHTML = 'Recent History';
+          list[2].innerHTML = html;
+        }
       }
-
-      lastVisitTime = data[len].lastVisitTime;
-      h1[2].innerHTML = 'Recent History';
-      list[2].innerHTML = html;
     });
+
+    // chrome.history.search(options, function(data) {
+    //   var len = len < 6 ? len : 6;
+
+    //   for (var i = 0; i < len; i++) {
+    //     html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
+    //   }
+
+    //   lastVisitTime = data[len].lastVisitTime;
+    //   h1[2].innerHTML = 'Recent History';
+    //   list[2].innerHTML = html;
+    // });
   };
 
   button[0].onclick = function(e) {
@@ -113,6 +131,7 @@
 
   chrome.storage.sync.get('user', function(items) {
     if (!items || !items.user || !items.user._id) return;
+    userId = items.user._id;
 
     $.ajax({
       url: 'http://104.236.76.220:3000/tabs/' + items.user._id,
@@ -121,11 +140,12 @@
         if (data) loadTabs(data[0].tabs);
       }
     });
+
+    loadHistory();
   });
 
   chrome.topSites.get(function(data) {
     topSites = data;
     loadTopSites();
-    loadHistory();
   });
 })(window.jQuery, window.search);
