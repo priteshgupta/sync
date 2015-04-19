@@ -1,8 +1,38 @@
-(function($, tabsList, mostVisited, search) {
-  var buttons = document.getElementsByTagName('button'),
-      h1 = document.getElementsByTagName('h1'),
+(function($, search) {
+  'use strict';
+
+  var h1 = document.getElementsByTagName('h1'),
+      list = document.getElementsByTagName('ul'),
+      button = document.getElementsByTagName('button'),
       topSites = [],
-      tabsObj = {};
+      tabsObj = {},
+      lastVisitTime;
+
+  var loadTabs = function(tabs, search) {
+    var html = '';
+
+    if (!tabs) {
+      h1[0].innerHTML = 'No Tabs Opened :(';
+      button[0].style.display = 'none';
+      return;
+    }
+    else {
+      h1[0].innerHTML = 'Current Tabs';
+      button[0].style.display = 'inline';
+      tabsObj = tabs;
+    }
+
+    Object.keys(tabs).forEach(function(tab) {
+      if (search && tabs[tab].title.toLowerCase().indexOf(search.toLowerCase()) === -1
+                 && tabs[tab].url.toLowerCase().indexOf(search.toLowerCase()) === -1) {
+        return;
+      }
+
+      html += '<li><a href="' + tabs[tab].url + '">' + tabs[tab].title + ' - <span>' + tabs[tab].url + '</span></a>';
+    });
+
+    list[0].innerHTML = html;
+  };
 
   var loadTopSites = function(allMostVisited, search) {
     var html = '',
@@ -25,37 +55,31 @@
     }
 
     h1[1].innerHTML = 'Most Visted';
-    mostVisited.innerHTML = html;
-    buttons[1].style.display = 'inline';
+    list[1].innerHTML = html;
+    // button[1].style.display = 'inline';
   };
 
-  var loadTabs = function(tabs, search) {
+  var loadHistory = function(options) {
     var html = '';
 
-    if (!tabs) {
-      h1[0].innerHTML = 'No Tabs Opened :(';
-      buttons[0].style.display = 'none';
-      return;
-    }
-    else {
-      h1[0].innerHTML = 'Tabs';
-      buttons[0].style.display = 'inline';
-      tabsObj = tabs;
-    }
-
-    Object.keys(tabs).forEach(function(tab) {
-      if (search && tabs[tab].title.toLowerCase().indexOf(search.toLowerCase()) === -1
-                 && tabs[tab].url.toLowerCase().indexOf(search.toLowerCase()) === -1) {
-        return;
-      }
-
-      html += '<li><a href="' + tabs[tab].url + '">' + tabs[tab].title + ' - <span>' + tabs[tab].url + '</span></a>';
+    options || (options = {
+      text: ''
     });
 
-    tabsList.innerHTML = html;
+    chrome.history.search(options, function(data) {
+      var len = len < 6 ? len : 6;
+
+      for (var i = 0; i < len; i++) {
+        html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
+      }
+
+      lastVisitTime = data[len].lastVisitTime;
+      h1[2].innerHTML = 'Recent History';
+      list[2].innerHTML = html;
+    });
   };
 
-  buttons[0].onclick = function(e) {
+  button[0].onclick = function(e) {
     var tabs = Object.keys(tabsObj),
         active;
 
@@ -64,14 +88,14 @@
     tabs.forEach(function(tab) {
       if (tabsObj[tab].active) active = tab;
 
-      window.buttons(tabsObj[tab].url);
+      window.open(tabsObj[tab].url);
     });
 
     chrome.tabs.update(parseInt(active, 10), { selected: true });
     window.close();
   };
 
-  buttons[1].onclick = function(e) {
+  button[1].onclick = function(e) {
     search.value = '';
     loadTopSites(e.target.style.visibility = 'hidden');
   };
@@ -94,9 +118,7 @@
       url: 'http://104.236.76.220:3000/tabs/' + items.user._id,
       dataType: 'json',
       success: function(data) {
-        if (data) {
-          loadTabs(data[0].tabs);
-        }
+        if (data) loadTabs(data[0].tabs);
       }
     });
   });
@@ -104,5 +126,6 @@
   chrome.topSites.get(function(data) {
     topSites = data;
     loadTopSites();
+    loadHistory();
   });
-})(window.jQuery, window.tabs, window.mostVisited, window.search);
+})(window.jQuery, window.search);
