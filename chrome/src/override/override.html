@@ -39,7 +39,7 @@
       margin: 45px 0;
     }
 
-    body > div.link > a {
+    body > div.link > button {
       display: none;
       text-decoration: none;
       color: white;
@@ -47,6 +47,12 @@
       padding: 7px 10px;
       border-radius: 2px;
       letter-spacing: 1px;
+      border: none;
+      font-family: 'Oxygen', cursive;
+      font-weight: 300;
+      font-size: 100%;
+      outline: none;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -56,12 +62,16 @@
   </ul>
 
   <div class="link">
-    <a href="#">Open All</a>
+    <button>Open All</button>
   </div>
 
-  <h1>Most Visted</h1>
+  <h1>&nbsp;</h1>
   <ul id="mostVisited">
   </ul>
+
+  <div class="link">
+    <button>Show Rest</button>
+  </div>
 
   <script src="../../js/jquery-2.1.3.min.js"></script>
   <script type="text/javascript" src="scripts.js"></script>

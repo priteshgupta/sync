@@ -1,5 +1,6 @@
-(function($, tabsList, title, mostVisited) {
-  var open = document.getElementsByTagName('a'),
+(function($, tabsList, mostVisited) {
+  var open = document.getElementsByTagName('button'),
+      h1 = document.getElementsByTagName('h1'),
       html = '',
       tabsObj = {};
 
@@ -14,12 +15,12 @@
           var tabs = data[0].tabs;
 
           if (!tabs) {
-            title.innerHTML = 'No Tabs Opened :(';
+            h1[0].innerHTML = 'No Tabs Opened :(';
             open[0].style.display = 'none';
             return;
           }
           else {
-            title.innerHTML = 'Tabs';
+            h1[0].innerHTML = 'Tabs';
             open[0].style.display = 'inline';
             tabsObj = tabs;
           }
@@ -34,19 +35,24 @@
     });
   });
 
-  chrome.topSites.get(function(data) {
-    var html = '';
+  var loadTopSites = function(allMostVisited) {
+    chrome.topSites.get(function(data) {
+      var html = '';
 
-    data.length > 5 && (data.splice(6));
+      if (!allMostVisited) {
+        data.length > 5 && (data.splice(6));
+      }
 
-    for (var i = 0, len = data.length; i < data.length; i++) {
+      for (var i = 0, len = data.length; i < data.length; i++) {
 
-      html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
-    }
+        html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
+      }
 
-    mostVisited.innerHTML = html;
-  });
-
+      h1[1].innerHTML = 'Most Visted';
+      mostVisited.innerHTML = html;
+      open[1].style.display = 'inline';
+    });
+  };
 
   open[0].onclick = function(e) {
     var tabs = Object.keys(tabsObj),
@@ -64,5 +70,9 @@
     window.close();
   };
 
-  // openMVAll.onclick = function
-})(window.jQuery, window.tabs, window.title, window.mostVisited);
+  open[1].onclick = function(e) {
+    loadTopSites(e.target.style.display = 'none');
+  };
+
+  loadTopSites();
+})(window.jQuery, window.tabs, window.mostVisited);
