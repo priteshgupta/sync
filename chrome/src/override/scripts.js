@@ -72,6 +72,7 @@
   };
 
   open[1].onclick = function(e) {
+    search.value = '';
     loadTopSites(e.target.style.visibility = 'hidden');
   };
 
