@@ -7,7 +7,7 @@ body {
 }
 
 body > div.search {
-  position: absolute;
+  position: fixed;
   top: 40px;
   right: 60px;
 }
@@ -44,6 +44,10 @@ body > div.search > input {
 
 .list > li > a > span {
   color: rgb(255, 137, 55);
+}
+
+body > ul > li > a > i {
+  color: rgba(0, 0, 0, 0.35);
 }
 
 body > div.link {

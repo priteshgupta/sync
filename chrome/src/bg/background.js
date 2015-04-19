@@ -13,35 +13,50 @@
 
 var currentTabs = {},
     url = 'http://104.236.76.220:3000/tabs/',
-    valid,
-    active;
+    userId;
 
 chrome.storage.sync.get('user', function(items) {
   if (items && items.user && items.user._id) {
-    url += items.user._id;
-    valid = true;
+    userId = items.user._id;
   }
 });
 
 var uploadTabs = function(tabs) {
-  if (!valid) return;
+  if (!userId) return;
 
   $.ajax({
     method: "POST",
-    url: url,
+    url: url + userId,
     dataType: 'JSON',
     data: {tabs: tabs},
     success: function(data) {
-      // console.log(data);
     }
   });
 };
 
 var updateTabs = function(tabId, changeInfo, tab) {
-  if (!tab || !valid || tab.status !== 'complete') return;
+  if (!tab || !userId || tab.status !== 'complete') return;
   // if (currentTabs[tabId] && currentTabs[tabId].url === tab.url && tab.status !== 'complete') return;
 
   if (tab.url.indexOf('chrome://') > -1) return;
+  if (tab.url.indexOf('chrome-extension://') > -1) return;
+  if (tab.url.indexOf('104.236.76.220:3000') > -1) return;
+
+  $.ajax({
+    method: 'POST',
+    url: 'http://104.236.76.220:3000/history/' + userId + '/chrome',
+    data: {
+      time: new Date().getTime(),
+      url: tab.url,
+      title: tab.title
+    },
+    dataType: 'text',
+    success: function(data) {
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      alert(textStatus + ' ' + errorThrown);
+    }
+  });
 
   currentTabs[tabId] = {
     active: tab.active,
@@ -52,25 +67,31 @@ var updateTabs = function(tabId, changeInfo, tab) {
   uploadTabs(currentTabs);
 };
 
-chrome.tabs.query({}, function(tabs) {
-  tabs.forEach(function(tab) {
-    if (tab.url.indexOf('chrome://') > -1) return;
+var queryTabs = function() {
+  chrome.tabs.query({}, function(tabs) {
 
-    currentTabs[tab.id] = {
-      active: tab.active,
-      url: tab.url,
-      title: tab.title
-    };
+    tabs.forEach(function(tab) {
+      if (tab.url.indexOf('chrome://') > -1) return;
+      if (tab.url.indexOf('chrome-extension://') > -1) return;
+      if (tab.url.indexOf('104.236.76.220:3000') > -1) return;
+
+      currentTabs[tab.id] = {
+        active: tab.active,
+        url: tab.url,
+        title: tab.title
+      };
+    });
+
+    uploadTabs(currentTabs);
   });
-
-  uploadTabs(currentTabs);
-});
+};
 
 chrome.tabs.onUpdated.addListener(updateTabs);
 
 chrome.tabs.onCreated.addListener(updateTabs);
 
 chrome.tabs.onRemoved.addListener(function(tabId, changeInfo, tab) {
-  delete currentTabs[tabId];
-  uploadTabs(currentTabs);
+  queryTabs();
 });
+
+queryTabs();
