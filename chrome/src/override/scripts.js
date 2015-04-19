@@ -1,57 +1,58 @@
-(function($, tabsList, mostVisited) {
+(function($, tabsList, mostVisited, search) {
   var open = document.getElementsByTagName('button'),
       h1 = document.getElementsByTagName('h1'),
-      html = '',
+      topSites = [],
       tabsObj = {};
 
-  chrome.storage.sync.get('user', function(items) {
-    if (!items || !items.user || !items.user._id) return;
+  var loadTopSites = function(allMostVisited, search) {
+    var html = '',
+        sites;
 
-    $.ajax({
-      url: 'http://104.236.76.220:3000/tabs/' + items.user._id,
-      dataType: 'json',
-      success: function(data) {
-        if (data) {
-          var tabs = data[0].tabs;
+    if (!allMostVisited && topSites.length > 5) {
+       sites = topSites.slice(0, 6);
+    }
+    else {
+      sites = topSites;
+    }
 
-          if (!tabs) {
-            h1[0].innerHTML = 'No Tabs Opened :(';
-            open[0].style.display = 'none';
-            return;
-          }
-          else {
-            h1[0].innerHTML = 'Tabs';
-            open[0].style.display = 'inline';
-            tabsObj = tabs;
-          }
-
-          Object.keys(tabs).forEach(function(tab) {
-            html += '<li><a href="' + tabs[tab].url + '">' + tabs[tab].title + ' - <span>' + tabs[tab].url + '</span></a>';
-          });
-
-          tabsList.innerHTML = html;
-        }
+    for (var i = 0, len = sites.length; i < sites.length; i++) {
+      if (search && sites[i].title.toLowerCase().indexOf(search.toLowerCase()) === -1
+                 && sites[i].url.toLowerCase().indexOf(search.toLowerCase()) === -1) {
+        continue;
       }
+
+      html += '<li><a href="' + sites[i].url + '">' + sites[i].title + ' - <span>' + sites[i].url + '</span></a>';
+    }
+
+    h1[1].innerHTML = 'Most Visted';
+    mostVisited.innerHTML = html;
+    open[1].style.display = 'inline';
+  };
+
+  var loadTabs = function(tabs, search) {
+    var html = '';
+
+    if (!tabs) {
+      h1[0].innerHTML = 'No Tabs Opened :(';
+      open[0].style.display = 'none';
+      return;
+    }
+    else {
+      h1[0].innerHTML = 'Tabs';
+      open[0].style.display = 'inline';
+      tabsObj = tabs;
+    }
+
+    Object.keys(tabs).forEach(function(tab) {
+      if (search && tabs[tab].title.toLowerCase().indexOf(search.toLowerCase()) === -1
+                 && tabs[tab].url.toLowerCase().indexOf(search.toLowerCase()) === -1) {
+        return;
+      }
+
+      html += '<li><a href="' + tabs[tab].url + '">' + tabs[tab].title + ' - <span>' + tabs[tab].url + '</span></a>';
     });
-  });
 
-  var loadTopSites = function(allMostVisited) {
-    chrome.topSites.get(function(data) {
-      var html = '';
-
-      if (!allMostVisited) {
-        data.length > 5 && (data.splice(6));
-      }
-
-      for (var i = 0, len = data.length; i < data.length; i++) {
-
-        html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
-      }
-
-      h1[1].innerHTML = 'Most Visted';
-      mostVisited.innerHTML = html;
-      open[1].style.display = 'inline';
-    });
+    tabsList.innerHTML = html;
   };
 
   open[0].onclick = function(e) {
@@ -71,8 +72,36 @@
   };
 
   open[1].onclick = function(e) {
-    loadTopSites(e.target.style.display = 'none');
+    loadTopSites(e.target.style.visibility = 'hidden');
   };
 
-  loadTopSites();
-})(window.jQuery, window.tabs, window.mostVisited);
+  search.onkeyup = function(e) {
+    if (e.target.value === '') {
+      Object.keys(tabsObj).length && (loadTabs(tabsObj));
+      loadTopSites();
+      return;
+    }
+
+    Object.keys(tabsObj).length && (loadTabs(tabsObj, e.target.value));
+    loadTopSites(true, e.target.value);
+  };
+
+  chrome.storage.sync.get('user', function(items) {
+    if (!items || !items.user || !items.user._id) return;
+
+    $.ajax({
+      url: 'http://104.236.76.220:3000/tabs/' + items.user._id,
+      dataType: 'json',
+      success: function(data) {
+        if (data) {
+          loadTabs(data[0].tabs);
+        }
+      }
+    });
+  });
+
+  chrome.topSites.get(function(data) {
+    topSites = data;
+    loadTopSites();
+  });
+})(window.jQuery, window.tabs, window.mostVisited, window.search);
