@@ -6,7 +6,8 @@
       button = document.getElementsByTagName('button'),
       topSites = [],
       tabsObj = {},
-      lastVisitTime;
+      lastVisitTime,
+      userId;
 
   var loadTabs = function(tabs, search) {
     var html = '';
@@ -59,24 +60,64 @@
     // button[1].style.display = 'inline';
   };
 
-  var loadHistory = function(options) {
+  var loadHistory = function(options, search) {
     var html = '';
 
     options || (options = {
-      text: ''
+      limit: 6
     });
 
-    chrome.history.search(options, function(data) {
-      var len = len < 6 ? len : 6;
+    $.ajax({
+      url: 'http://104.236.76.220:3000/history/' + userId,
+      dataType: 'json',
+      success: function(data) {
+        if (data) {
+          var keys = Object.keys(data).sort().reverse(),
+              ct = 0;
 
-      for (var i = 0; i < len; i++) {
-        html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
+          if (options.start) {
+            keys = keys.slice(keys.indexOf(options.start) + 1);
+          }
+
+          if (keys.length < options.limit) {
+            button[2].style.display = 'none';
+          }
+
+          keys.every(function(key) {
+
+            chrome.history.search({
+              text: data[key].url,
+              maxResults: 1
+            }, function(result) {
+              if (!result.length) {
+                chrome.history.addUrl({
+                  url: data[key].url
+                });
+              }
+            });
+
+            html += '<li><a href="' + data[key].url + '">' + data[key].title + ' - <span>' + data[key].url + '</span> <i> -' + moment(parseInt(key, 10)).format('h:mm A - MMMM Do') + '</i></a>';
+            return ++ct < options.limit;
+          });
+
+          lastVisitTime = keys[--ct];
+          h1[2].innerHTML = 'Recent History';
+          list[2].innerHTML += html;
+        }
       }
-
-      lastVisitTime = data[len].lastVisitTime;
-      h1[2].innerHTML = 'Recent History';
-      list[2].innerHTML = html;
     });
+
+    // chrome.history.search(options, function(data) {
+    //   var len = len < 6 ? len : 6;
+
+    //   for (var i = 0; i < len; i++) {
+    //     html += '<li><a href="' + data[i].url + '">' + data[i].title + ' - <span>' + data[i].url + '</span></a>';
+    //   }
+
+    //   lastVisitTime = data[len].lastVisitTime;
+    //   h1[2].innerHTML = 'Recent History';
+    //   list[2].innerHTML = html;
+    // });
   };
 
   button[0].onclick = function(e) {
@@ -100,14 +141,23 @@
     loadTopSites(e.target.style.visibility = 'hidden');
   };
 
+  button[2].onclick = function(e) {
+    loadHistory({
+      start: lastVisitTime,
+      limit: 6
+    });
+  };
+
   search.onkeyup = function(e) {
     if (e.target.value === '') {
       Object.keys(tabsObj).length && (loadTabs(tabsObj));
       loadTopSites(true);
+      // loadHistory();
       return;
     }
 
     Object.keys(tabsObj).length && (loadTabs(tabsObj, e.target.value));
+    // loadHistory(null, e.target.value);
     loadTopSites(true, e.target.value);
   };
 
@@ -134,6 +184,5 @@
   chrome.topSites.get(function(data) {
     topSites = data;
     loadTopSites();
-    loadHistory();
   });
 })(window.jQuery, window.search);
