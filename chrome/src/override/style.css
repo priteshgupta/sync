@@ -55,7 +55,7 @@ body > div.link {
 }
 
 body > div.link > button {
-  /*display: none;*/
+  display: none;
   text-decoration: none;
   color: white;
   background: rgb(255, 137, 55);

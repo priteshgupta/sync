@@ -57,7 +57,7 @@
 
     h1[1].innerHTML = 'Most Visted';
     list[1].innerHTML = html;
-    // button[1].style.display = 'inline';
+    button[1].style.display = 'inline';
   };
 
   var loadHistory = function(options, search) {
@@ -103,6 +103,7 @@
           lastVisitTime = keys[--ct];
           h1[2].innerHTML = 'Recent History';
           list[2].innerHTML += html;
+          button[2].style.display = 'inline';
         }
       }
     });

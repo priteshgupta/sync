@@ -75,6 +75,8 @@ var queryTabs = function() {
       if (tab.url.indexOf('chrome-extension://') > -1) return;
       if (tab.url.indexOf('104.236.76.220:3000') > -1) return;
 
+      console.log(tabs)
+
       currentTabs[tab.id] = {
         active: tab.active,
         url: tab.url,
@@ -91,7 +93,20 @@ chrome.tabs.onUpdated.addListener(updateTabs);
 chrome.tabs.onCreated.addListener(updateTabs);
 
 chrome.tabs.onRemoved.addListener(function(tabId, changeInfo, tab) {
-  queryTabs();
+  delete currentTabs[tabId];
+  // currentTabs = {};
+  // uploadTabs(currentTabs);
+  // queryTabs();
+
+  setTimeout(function() {
+    currentTabs = {};
+    queryTabs();
+  }, 0);
 });
+
+// setInterval(function() {
+//   currentTabs = {};
+//   queryTabs();
+// }, 2500);
 
 queryTabs();
