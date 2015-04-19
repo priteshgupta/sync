@@ -71,7 +71,6 @@ var queryTabs = function() {
   chrome.tabs.query({}, function(tabs) {
 
     tabs.forEach(function(tab) {
-
       if (tab.url.indexOf('chrome://') > -1) return;
       if (tab.url.indexOf('chrome-extension://') > -1) return;
       if (tab.url.indexOf('104.236.76.220:3000') > -1) return;
@@ -92,9 +91,7 @@ chrome.tabs.onUpdated.addListener(updateTabs);
 chrome.tabs.onCreated.addListener(updateTabs);
 
 chrome.tabs.onRemoved.addListener(function(tabId, changeInfo, tab) {
-  delete currentTabs[tabId];
   queryTabs();
-  uploadTabs(currentTabs);
 });
 
 queryTabs();

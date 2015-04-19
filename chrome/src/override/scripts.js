@@ -60,11 +60,11 @@
     // button[1].style.display = 'inline';
   };
 
-  var loadHistory = function(options) {
+  var loadHistory = function(options, search) {
     var html = '';
 
     options || (options = {
-      text: ''
+      limit: 6
     });
 
     $.ajax({
@@ -72,14 +72,37 @@
       dataType: 'json',
       success: function(data) {
         if (data) {
-          var keys = Object.keys(data).sort().reverse();
+          var keys = Object.keys(data).sort().reverse(),
+              ct = 0;
 
-          keys.forEach(function(key) {
+          if (options.start) {
+            keys = keys.slice(keys.indexOf(options.start) + 1);
+          }
+
+          if (keys.length < options.limit) {
+            button[2].style.display = 'none';
+          }
+
+          keys.every(function(key) {
+
+            chrome.history.search({
+              text: data[key].url,
+              maxResults: 1
+            }, function(result) {
+              if (!result.length) {
+                chrome.history.addUrl({
+                  url: data[key].url
+                });
+              }
+            });
+
             html += '<li><a href="' + data[key].url + '">' + data[key].title + ' - <span>' + data[key].url + '</span> <i> -' + moment(parseInt(key, 10)).format('h:mm A - MMMM Do') + '</i></a>';
+            return ++ct < options.limit;
           });
 
+          lastVisitTime = keys[--ct];
           h1[2].innerHTML = 'Recent History';
-          list[2].innerHTML = html;
+          list[2].innerHTML += html;
         }
       }
     });
@@ -118,14 +141,23 @@
     loadTopSites(e.target.style.visibility = 'hidden');
   };
 
+  button[2].onclick = function(e) {
+    loadHistory({
+      start: lastVisitTime,
+      limit: 6
+    });
+  };
+
   search.onkeyup = function(e) {
     if (e.target.value === '') {
       Object.keys(tabsObj).length && (loadTabs(tabsObj));
       loadTopSites(true);
+      // loadHistory();
       return;
     }
 
     Object.keys(tabsObj).length && (loadTabs(tabsObj, e.target.value));
+    // loadHistory(null, e.target.value);
     loadTopSites(true, e.target.value);
   };
 

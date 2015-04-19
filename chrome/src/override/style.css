@@ -7,7 +7,7 @@ body {
 }
 
 body > div.search {
-  position: absolute;
+  position: fixed;
   top: 40px;
   right: 60px;
 }
